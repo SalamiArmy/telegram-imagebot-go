@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/messiahluo/tgimagebot/telegramapi"
-	"github.com/messiahluo/tgimagebot/searchapi"
+	"github.com/messiahluo/telegram-imagebot-go/telegramapi"
+	"github.com/messiahluo/telegram-imagebot-go/searchapi"
 )
 
 func main() {
