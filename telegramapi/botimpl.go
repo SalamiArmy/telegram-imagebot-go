@@ -33,14 +33,12 @@ func StartFetchUpdates(updateChannel *chan []Update) {
 }
 
 func SendMessage(chatId int64, text string) {
-	url := fmt.Sprintf("%s/sendMessage?chat_id=%d&text=%s", TG_URL, chatId,
-		text)
-	fmt.Println(url)
+	url := fmt.Sprintf("%s/sendMessage?chat_id=%d&text=%s", TG_URL, chatId, text)
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Println(err)
+		fmt.Println(resp)
 	}
-	fmt.Println(resp)
 }
 
 func GetUpdates(offset int64) []Update {

@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strings"
 )
 
 const BASE_URL = "https://www.googleapis.com/customsearch/v1?"
@@ -28,15 +27,14 @@ type Result struct {
 	Url string
 }
 
-func SearchImageForKeyword(keyword string) string {
+func SearchImageForKeyword(keyword string, getGif bool) string {
 	keyword = url.QueryEscape(keyword)
 	realUrl := PUBLIC_IMAGE_SEARCH_URL + keyword
 
-	if strings.Index(keyword, "getgif") == 1 {
+	if getGif == true {
 		realUrl = realUrl + "&fileType=gif"
 	}
 
-	fmt.Println(realUrl)
 	response, err := http.Get(realUrl)
 	if err != nil {
 		return ""
@@ -62,8 +60,8 @@ func SearchImageForKeyword(keyword string) string {
 		searchResults = result["items"].([]interface{})[0].(map[string]interface{})
 
 		if searchResults["link"] != nil {
-			fmt.Println("Returning: " + searchResults["link"].(string) + " to user.")
-			return searchResults["link"].(string)
+			fmt.Println("Returning: " + url.QueryEscape(searchResults["link"].(string)) + " to user.")
+			return url.QueryEscape(searchResults["link"].(string))
 		}
 
 		fmt.Println(result)
@@ -71,4 +69,24 @@ func SearchImageForKeyword(keyword string) string {
 
 	fmt.Println(result)
 	return ""
+}
+
+func DownloadTheImage(theUrl string) {
+    response, e := http.Get(theUrl)
+    if e != nil {
+        fmt.Println(e)
+    }
+    defer response.Body.Close()
+
+    //open a file for writing
+    file, err := os.Create("C:/tmp/asdf.jpg")
+    if err != nil {
+        fmt.Println(err)
+    }
+    _, err = io.Copy(file, response.Body)
+    if err != nil {
+        log.Fatal(err)
+    }
+    file.Close()
+    fmt.Println("Image Downloaded from " + theUrl)
 }
