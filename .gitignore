@@ -20,5 +20,9 @@ _cgo_export.*
 _testmain.go
 
 *.exe
+*.bat
 *.test
 *.prof
+*.log
+*.zerr
+

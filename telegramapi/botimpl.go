@@ -9,7 +9,7 @@ import (
 )
 
 const TG_URL string =
-	"https://api.telegram.org/bot112817271:AAHuXhmSRb6SnMgpc0q_txZI5X-4ZR6YHho"
+	"https://api.telegram.org/bot{YOUR BOT ID HERE}"
 
 type GetUpdatesResponse struct {
 	Ok bool
