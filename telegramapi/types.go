@@ -1,9 +1,9 @@
 package telegramapi
 
 type User struct {
-	Id int64
-	First_name string
-	Last_name string
+	ID int64
+	FirstName string
+	LastName string
 	Username string
 }
 

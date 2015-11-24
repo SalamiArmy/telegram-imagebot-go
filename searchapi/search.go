@@ -3,9 +3,14 @@ package searchapi
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
+	"math/rand"
+	"strconv"
+	"strings"
 )
 
 const BASE_URL = "https://www.googleapis.com/customsearch/v1?"
@@ -34,9 +39,12 @@ func SearchImageForKeyword(keyword string, getGif bool) string {
 	if getGif == true {
 		realUrl = realUrl + "&fileType=gif"
 	}
+	
+	realUrl = realUrl + "&start=" + strconv.Itoa(rand.Intn(10))
 
 	response, err := http.Get(realUrl)
 	if err != nil {
+		fmt.Println(err)
 		return ""
 	}
 
@@ -44,6 +52,7 @@ func SearchImageForKeyword(keyword string, getGif bool) string {
 	body, err := ioutil.ReadAll(response.Body)
 
 	if err != nil {
+		fmt.Println(err)
 		return ""
 	}
 
@@ -60,7 +69,9 @@ func SearchImageForKeyword(keyword string, getGif bool) string {
 		searchResults = result["items"].([]interface{})[0].(map[string]interface{})
 
 		if searchResults["link"] != nil {
-			fmt.Println("Returning: " + url.QueryEscape(searchResults["link"].(string)) + " to user.")
+			if getGif == true || strings.HasSuffix(searchResults["link"].(string), ".gif") {
+				DownloadTheImage(searchResults["link"].(string))
+			}
 			return url.QueryEscape(searchResults["link"].(string))
 		}
 
@@ -71,7 +82,7 @@ func SearchImageForKeyword(keyword string, getGif bool) string {
 	return ""
 }
 
-func DownloadTheImage(theUrl string) {
+func DownloadTheImage(theUrl string) string {
     response, e := http.Get(theUrl)
     if e != nil {
         fmt.Println(e)
@@ -79,14 +90,20 @@ func DownloadTheImage(theUrl string) {
     defer response.Body.Close()
 
     //open a file for writing
-    file, err := os.Create("C:/tmp/asdf.jpg")
+	filePath := "C:\\temp\\ImagebotCache.gif"
+    err := os.Remove(filePath)
+    if err != nil {
+        fmt.Println(err)
+    }
+    file, err := os.Create(filePath)
     if err != nil {
         fmt.Println(err)
     }
     _, err = io.Copy(file, response.Body)
     if err != nil {
-        log.Fatal(err)
+        fmt.Println(err)
     }
     file.Close()
-    fmt.Println("Image Downloaded from " + theUrl)
+    fmt.Println("Image Downloaded from " + theUrl + " to " + filePath)
+	return filePath
 }

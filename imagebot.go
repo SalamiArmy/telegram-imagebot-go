@@ -4,7 +4,6 @@ import (
 	"searchapi"
 	"strings"
 	"telegramapi"
-	"fmt"
 )
 
 func main() {
@@ -19,17 +18,20 @@ func main() {
 				trimmedMessageText = strings.TrimPrefix(trimmedMessageText, "/get ")
 				var imageUrl string
 				if strings.Index(update.Message.Text, "/getgif ") == 0 {
-					imageUrl = searchapi.SearchImageForKeyword(trimmedMessageText, true)					
+					imageUrl = searchapi.SearchImageForKeyword(trimmedMessageText, true)
+					
 				} else {
 					imageUrl = searchapi.SearchImageForKeyword(trimmedMessageText, false)
 				}
 				if len(imageUrl) > 0 {
-					if update.Message.From.Username != "" {
-						telegramapi.SendMessage(update.Message.Chat.Id, update.Message.From.Username + ": \"" + trimmedMessageText  + "\"")
+					var userID string
+					if strings.TrimSpace(update.Message.From.Username) != "" {
+						userID = update.Message.From.Username
 					} else {
-						telegramapi.SendMessage(update.Message.Chat.Id, update.Message.From.First_name + ": \"" + trimmedMessageText  + "\"")
+						userID = update.Message.From.FirstName
 					}
-					telegramapi.SendMessage(update.Message.Chat.Id, imageUrl)
+					telegramapi.SendMessage(update.Message.Chat.ID, userID + ": \"" + trimmedMessageText  + "\"")
+					telegramapi.SendMessage(update.Message.Chat.ID, imageUrl)
 				}
 			}
 		}

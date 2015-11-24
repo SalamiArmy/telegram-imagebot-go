@@ -3,9 +3,14 @@ package telegramapi
 import (
 	"fmt"
 	"net/http"
+	"io"
 	"io/ioutil"
 	"encoding/json"
 	"time"
+	"bytes"
+	"mime/multipart"
+	"os"
+	"path/filepath"
 )
 
 const TG_URL string =
@@ -39,6 +44,54 @@ func SendMessage(chatId int64, text string) {
 		fmt.Println(err)
 		fmt.Println(resp)
 	}
+}
+
+func SendFile(chatId int64, path string) ([]byte, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return []byte{}, err
+	}
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile("your gif sire", filepath.Base(path))
+	if err != nil {
+		return []byte{}, err
+	}
+
+	if _, err = io.Copy(part, file); err != nil {
+		return []byte{}, err
+	}
+
+	if err = writer.Close(); err != nil {
+		return []byte{}, err
+	}
+
+	url := fmt.Sprintf("%s/sendPhoto?chat_id=%d", TG_URL, chatId)
+	req, err := http.NewRequest("POST", url, body)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	req.Header.Add("Content-Type", writer.FormDataContentType())
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	if resp.StatusCode == http.StatusInternalServerError {
+		return []byte{}, fmt.Errorf("telegram: internal server error")
+	}
+
+	json, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return json, nil
 }
 
 func GetUpdates(offset int64) []Update {
