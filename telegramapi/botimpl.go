@@ -55,7 +55,7 @@ func SendFile(chatId int64, path string) ([]byte, error) {
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
-	part, err := writer.CreateFormFile("your gif sire", filepath.Base(path))
+	part, err := writer.CreateFormFile("document", filepath.Base(path))
 	if err != nil {
 		return []byte{}, err
 	}
@@ -68,7 +68,7 @@ func SendFile(chatId int64, path string) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	url := fmt.Sprintf("%s/sendPhoto?chat_id=%d", TG_URL, chatId)
+	url := fmt.Sprintf("%s/sendDocument?chat_id=%d", TG_URL, chatId)
 	req, err := http.NewRequest("POST", url, body)
 	if err != nil {
 		return []byte{}, err

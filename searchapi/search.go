@@ -61,6 +61,7 @@ func SearchImageForKeyword(keyword string, getGif bool) string {
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		fmt.Println(err)
+		fmt.Println(body)
 		return ""
 	}
 
@@ -75,11 +76,31 @@ func SearchImageForKeyword(keyword string, getGif bool) string {
 			return url.QueryEscape(searchResults["link"].(string))
 		}
 
+		fmt.Println("Error parsing link from response search result:")
+		fmt.Println("realUrl: " + realUrl)
+		fmt.Println("body: " + string(body[:]))
+		fmt.Print("result: ")
 		fmt.Println(result)
+		return ":disappointed:Could not get link from search results: " + realUrl
+	} else {
+		if result["searchInformation"] != nil {
+			var searchInformation map[string]interface{}
+			searchInformation = result["searchInformation"].(map[string]interface{})
+			if searchInformation["totalResults"] != nil {
+				totalResults := searchInformation["totalResults"].(string)
+				if totalResults == "0" {
+					return "No results found. Try it yourself! " + url.QueryEscape(realUrl)
+				}
+			}
+		}
 	}
 
+	fmt.Println("Error parsing any search result from response:")
+	fmt.Println("realUrl: " + realUrl)
+	fmt.Println("body: " + string(body[:]))
+	fmt.Print("result: ")
 	fmt.Println(result)
-	return ""
+	return ":disappointed:Could not get link from search results: " + url.QueryEscape(realUrl)
 }
 
 func DownloadTheImage(theUrl string) string {
