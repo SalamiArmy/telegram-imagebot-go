@@ -1,5 +1,5 @@
 # telegram-imagebot-go
-A telegram image bot written in go
+A telegram Google CSE bot written in go.
 
 There are 3 keys to enter, two in searchapi\search.go, one in telegramapi\botimpl.go.
 
