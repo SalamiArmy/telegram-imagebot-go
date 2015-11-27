@@ -38,6 +38,7 @@ func StartFetchUpdates(updateChannel *chan []Update) {
 }
 
 func SendMessage(chatId int64, text string) {
+    SendAction(chatId, "typing")
 	url := fmt.Sprintf("%s/sendMessage?chat_id=%d&text=%s", TG_URL, chatId, text)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -46,7 +47,17 @@ func SendMessage(chatId int64, text string) {
 	}
 }
 
+func SendAction(chatId int64, action string) {
+	url := fmt.Sprintf("%s/sendChatAction?chat_id=%d&action=%s", TG_URL, chatId, action)
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println(resp)
+	}
+}
+
 func SendFile(chatId int64, path string) ([]byte, error) {
+	SendAction(chatId, "upload_document")
 	file, err := os.Open(path)
 	if err != nil {
 		return []byte{}, err
@@ -69,6 +80,55 @@ func SendFile(chatId int64, path string) ([]byte, error) {
 	}
 
 	url := fmt.Sprintf("%s/sendDocument?chat_id=%d", TG_URL, chatId)
+	req, err := http.NewRequest("POST", url, body)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	req.Header.Add("Content-Type", writer.FormDataContentType())
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	if resp.StatusCode == http.StatusInternalServerError {
+		return []byte{}, fmt.Errorf("telegram: internal server error")
+	}
+
+	json, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return json, nil
+}
+
+func SendPhoto(chatId int64, path string, caption string) ([]byte, error) {
+	SendAction(chatId, "upload_photo")
+	file, err := os.Open(path)
+	if err != nil {
+		return []byte{}, err
+	}
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile("photo", filepath.Base(path))
+	if err != nil {
+		return []byte{}, err
+	}
+
+	if _, err = io.Copy(part, file); err != nil {
+		return []byte{}, err
+	}
+
+	if err = writer.Close(); err != nil {
+		return []byte{}, err
+	}
+
+	url := fmt.Sprintf("%s/sendPhoto?chat_id=%d&caption=%s", TG_URL, chatId, caption)
 	req, err := http.NewRequest("POST", url, body)
 	if err != nil {
 		return []byte{}, err

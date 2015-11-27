@@ -32,7 +32,7 @@ type Result struct {
 	Url string
 }
 
-func SearchImageForKeyword(keyword string, getGif bool) string {
+func SearchForImagesByKeyword(keyword string, getGif bool) (string, string) {
 	keyword = url.QueryEscape(keyword)
 	realUrl := PUBLIC_IMAGE_SEARCH_URL + keyword
 
@@ -40,12 +40,12 @@ func SearchImageForKeyword(keyword string, getGif bool) string {
 		realUrl = realUrl + "&fileType=gif"
 	}
 	
-	realUrl = realUrl + "&start=" + strconv.Itoa(rand.Intn(10))
+	realUrl = realUrl + "&start=" + strconv.Itoa(rand.Intn(9)+1)
 
 	response, err := http.Get(realUrl)
 	if err != nil {
 		fmt.Println(err)
-		return ""
+		return "", ""
 	}
 
 	defer response.Body.Close()
@@ -53,7 +53,7 @@ func SearchImageForKeyword(keyword string, getGif bool) string {
 
 	if err != nil {
 		fmt.Println(err)
-		return ""
+		return "", ""
 	}
 
 	var result map[string]interface{}
@@ -62,26 +62,30 @@ func SearchImageForKeyword(keyword string, getGif bool) string {
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println(body)
-		return ""
+		return "", ""
 	}
 
 	if result["items"] != nil {
 		var searchResults map[string]interface{}
 		searchResults = result["items"].([]interface{})[0].(map[string]interface{})
-
+		imageUrl := ""
 		if searchResults["link"] != nil {
-			if getGif == true || strings.HasSuffix(searchResults["link"].(string), ".gif") {
-				DownloadTheImage(searchResults["link"].(string))
-			}
-			return url.QueryEscape(searchResults["link"].(string))
+			imageUrl = searchResults["link"].(string)
+		} else {
+			fmt.Println("Error parsing link from response search result:")
+			fmt.Println("realUrl: " + realUrl)
+			fmt.Println("body: " + string(body[:]))
+			fmt.Print("result: ")
+			fmt.Println(result)
+			return "", ":pensive: Could not get link from search results: " + realUrl
 		}
+		
+		filePath := ""
+		if (searchResults["mime"] != nil && searchResults["title"] != nil) {
+			filePath = DownloadIt(imageUrl, searchResults["mime"].(string), searchResults["title"].(string))
+		}
+		return filePath, url.QueryEscape(imageUrl)
 
-		fmt.Println("Error parsing link from response search result:")
-		fmt.Println("realUrl: " + realUrl)
-		fmt.Println("body: " + string(body[:]))
-		fmt.Print("result: ")
-		fmt.Println(result)
-		return ":disappointed:Could not get link from search results: " + realUrl
 	} else {
 		if result["searchInformation"] != nil {
 			var searchInformation map[string]interface{}
@@ -89,7 +93,7 @@ func SearchImageForKeyword(keyword string, getGif bool) string {
 			if searchInformation["totalResults"] != nil {
 				totalResults := searchInformation["totalResults"].(string)
 				if totalResults == "0" {
-					return "No results found. Try it yourself! " + url.QueryEscape(realUrl)
+					return "", ":pensive: No results found in search results: " + url.QueryEscape(realUrl)
 				}
 			}
 		}
@@ -100,22 +104,25 @@ func SearchImageForKeyword(keyword string, getGif bool) string {
 	fmt.Println("body: " + string(body[:]))
 	fmt.Print("result: ")
 	fmt.Println(result)
-	return ":disappointed:Could not get link from search results: " + url.QueryEscape(realUrl)
+	return "", ":pensive: Could not get link from search results: " + url.QueryEscape(realUrl)
 }
 
-func DownloadTheImage(theUrl string) string {
+func DownloadIt(theUrl string, mimeType string, titleString string) string {
     response, e := http.Get(theUrl)
     if e != nil {
         fmt.Println(e)
     }
-    defer response.Body.Close()
 
     //open a file for writing
-	filePath := "C:\\temp\\ImagebotCache.gif"
-    err := os.Remove(filePath)
-    if err != nil {
-        fmt.Println(err)
-    }
+	fileExtention := strings.Split(mimeType, "/")[1]
+	if fileExtention == "" {
+		fileExtention = "jpg"
+	}
+	filePath := "C:\\temp\\NuggetIsaGigaFaggot." + fileExtention
+	
+	fmt.Println("Attempting to write to file " + filePath + " from " + theUrl)
+    defer response.Body.Close()
+	
     file, err := os.Create(filePath)
     if err != nil {
         fmt.Println(err)
@@ -125,6 +132,5 @@ func DownloadTheImage(theUrl string) string {
         fmt.Println(err)
     }
     file.Close()
-    fmt.Println("Image Downloaded from " + theUrl + " to " + filePath)
 	return filePath
 }

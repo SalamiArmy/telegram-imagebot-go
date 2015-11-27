@@ -5,6 +5,7 @@ import (
 	"strings"
 	"telegramapi"
 	"fmt"
+	"os"
 )
 
 func main() {
@@ -14,33 +15,65 @@ func main() {
 
 	for updates := range updatesch {
 		for _, update := range updates {
-			if strings.Index(update.Message.Text, "/get ") == 0 || strings.Index(update.Message.Text, "/getgif ") == 0 || strings.Index(update.Message.Text, "/getactualgif ") == 0 {
-				trimmedMessageText := strings.TrimPrefix(update.Message.Text, "/getgif ")
-				trimmedMessageText = strings.TrimPrefix(trimmedMessageText, "/get ")
-				trimmedMessageText = strings.TrimPrefix(trimmedMessageText, "/getactualgif ")
+			queryType := ""
+			trimmedMessageText := ""
+			
+			recognizedQueryPrefix := "/get "
+			if strings.HasPrefix(update.Message.Text, recognizedQueryPrefix) {
+				trimmedMessageText = strings.TrimPrefix(update.Message.Text, recognizedQueryPrefix)
+				queryType = "ActualImage"
+			}
+			
+			recognizedQueryPrefix = "/getgif "
+			if strings.HasPrefix(update.Message.Text, recognizedQueryPrefix) {
+				trimmedMessageText = strings.TrimPrefix(update.Message.Text, recognizedQueryPrefix)
+				queryType = "GifLink"
+			}
+			
+			if queryType != "" {
+				filePath := ""
+				count := 0
 				var imageUrl string
-				if strings.Index(update.Message.Text, "/getgif ") == 0 || strings.Index(update.Message.Text, "/getactualgif ") == 0 {
-					fmt.Println("Getting gif or actual gif " + update.Message.Text)
-					imageUrl = searchapi.SearchImageForKeyword(trimmedMessageText, true)
-					fmt.Println("Got gif url as " + imageUrl)
-				} else {
-					imageUrl = searchapi.SearchImageForKeyword(trimmedMessageText, false)
+				
+				for filePath == "" || count > 10 {
+					filePath, imageUrl = searchapi.SearchForImagesByKeyword(trimmedMessageText, queryType == "GifLink")
+					count++
 				}
-				if len(imageUrl) > 0 {
-					userID := update.Message.From.FirstName + " " + update.Message.From.Username + " " + update.Message.From.LastName
-					if strings.Index(update.Message.Text, "/getgif ") == 0 || strings.HasSuffix(imageUrl, ".gif") {
-						telegramapi.SendMessage(update.Message.Chat.ID, userID + ": \"" + trimmedMessageText  + "\"")
-						byteStream, err := telegramapi.SendFile(update.Message.Chat.ID, "C:\\temp\\ImagebotCache.gif")
-						response := string(byteStream[:]);
-						if strings.Contains(response, "[Error]") {
-							telegramapi.SendMessage(update.Message.Chat.ID, response)
-						} else {
-							fmt.Println("Response: " + response)
-							fmt.Print(err)
-						}
-					} else {
-						telegramapi.SendMessage(update.Message.Chat.ID, userID + ": \"" + trimmedMessageText  + "\"")
+				
+				userID := ""
+				if strings.TrimSpace(update.Message.From.Username) != "" {
+					userID = update.Message.From.Username + ": "
+				}
+				
+				if filePath == "" {
+					telegramapi.SendMessage(update.Message.Chat.ID, imageUrl)
+				}
+				
+				if len(filePath) > 0 && queryType == "GifLink" {
+					byteStream, err := telegramapi.SendFile(update.Message.Chat.ID, filePath)
+					response := string(byteStream[:]);
+					if strings.Contains(response, "[Error]") || err != nil {
 						telegramapi.SendMessage(update.Message.Chat.ID, imageUrl)
+					} else {
+						fmt.Println(response)
+					}
+					err = os.Remove(filePath)
+					if err != nil {
+						fmt.Println(err)
+					}
+				}
+				
+				if len(filePath) > 0 && queryType == "ActualImage" {
+					byteStream, err := telegramapi.SendPhoto(update.Message.Chat.ID, filePath, userID + "\"" + trimmedMessageText  + "\"")
+					response := string(byteStream[:]);
+					if strings.Contains(response, "[Error]") || err != nil {
+						telegramapi.SendMessage(update.Message.Chat.ID, imageUrl)
+					} else {
+						fmt.Println(response)
+					}
+					err = os.Remove(filePath)
+					if err != nil {
+						fmt.Println(err)
 					}
 				}
 			}
