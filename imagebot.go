@@ -91,8 +91,6 @@ func main() {
 					response := string(byteStream[:]);
 					if strings.Contains(response, "[Error]") || err != nil {
 						telegramapi.SendMessage(update.Message.Chat.ID, imageUrl)
-					} else {
-						fmt.Println(response)
 					}
 					err = os.Remove(filePath)
 					if err != nil {
@@ -105,8 +103,6 @@ func main() {
 					response := string(byteStream[:]);
 					if strings.Contains(response, "[Error]") || err != nil {
 						telegramapi.SendMessage(update.Message.Chat.ID, imageUrl)
-					} else {
-						fmt.Println(response)
 					}
 					err = os.Remove(filePath)
 					if err != nil {
