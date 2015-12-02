@@ -47,6 +47,16 @@ func SendMessage(chatId int64, text string) {
 	}
 }
 
+func SendLocation(chatId int64, mapLat string, mapLong string) {
+    SendAction(chatId, "find_location")
+	url := fmt.Sprintf("%s/sendLocation?chat_id=%d&latitude=%s&longitude=%s", TG_URL, chatId, mapLat, mapLong)
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println(resp)
+	}
+}
+
 func SendAction(chatId int64, action string) {
 	url := fmt.Sprintf("%s/sendChatAction?chat_id=%d&action=%s", TG_URL, chatId, action)
 	resp, err := http.Get(url)
