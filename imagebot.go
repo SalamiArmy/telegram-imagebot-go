@@ -37,7 +37,7 @@ func main() {
 			}
 			
 			recognizedQueryPrefix = "/getvid "
-			if strings.HasPrefix(strings.ToLowerupdate.Message.Text), recognizedQueryPrefix) {
+			if strings.HasPrefix(strings.ToLower(update.Message.Text), recognizedQueryPrefix) {
 				trimmedMessageText = strings.TrimPrefix(strings.ToLower(update.Message.Text), recognizedQueryPrefix)
 				queryType = "Vid"
 			}
