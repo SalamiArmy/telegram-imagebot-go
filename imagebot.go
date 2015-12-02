@@ -20,13 +20,13 @@ func main() {
 			
 			recognizedQueryPrefix := "/get "
 			if strings.HasPrefix(strings.ToLower(update.Message.Text), recognizedQueryPrefix) {
-				trimmedMessageText = strings.TrimPrefix(update.Message.Text, recognizedQueryPrefix)
+				trimmedMessageText = strings.TrimPrefix(strings.ToLower(update.Message.Text), recognizedQueryPrefix)
 				queryType = "Image"
 			}
 			
 			recognizedQueryPrefix = "/getgif "
 			if strings.HasPrefix(strings.ToLower(update.Message.Text), recognizedQueryPrefix) {
-				trimmedMessageText = strings.TrimPrefix(update.Message.Text, recognizedQueryPrefix)
+				trimmedMessageText = strings.TrimPrefix(strings.ToLower(update.Message.Text), recognizedQueryPrefix)
 				queryType = "Gif"
 			}
 			
@@ -37,7 +37,7 @@ func main() {
 			}
 			
 			recognizedQueryPrefix = "/getvid "
-			if strings.HasPrefix(xupdate.Message.Text, recognizedQueryPrefix) {
+			if strings.HasPrefix(strings.ToLowerupdate.Message.Text), recognizedQueryPrefix) {
 				trimmedMessageText = strings.TrimPrefix(strings.ToLower(update.Message.Text), recognizedQueryPrefix)
 				queryType = "Vid"
 			}
