@@ -65,6 +65,9 @@ func main() {
 				if queryType == "Image" || queryType == "Gif" || queryType == "HugeImage" || queryType == "HugeGif" {
 					for filePath == "" && count < 10 {
 						filePath, imageUrl = searchapi.SearchForImagesByKeyword(trimmedMessageText, queryType == "Gif" || queryType == "HugeGif", queryType == "HugeImage" || queryType == "HugeGif")
+						if filePath == "" && imageUrl == "Error" {
+							filePath, imageUrl = searchapi.SearchBingForImagesByKeyword(trimmedMessageText)
+						}
 						count++
 					}
 				}
@@ -100,13 +103,11 @@ func main() {
 					}
 				}
 				
-				if len(filePath) > 0 && queryType == "Image" || queryType == "HugeImage" {
+				if len(filePath) > 0 && queryType == "Image" || queryType == "HugeImage" || queryType == "BingImage" {
 					byteStream, err := telegramapi.SendPhoto(update.Message.Chat.ID, filePath, userID + "\"" + trimmedMessageText  + "\"")
 					response := string(byteStream[:]);
 					if strings.Contains(response, "[Error]") || err != nil {
 						telegramapi.SendMessage(update.Message.Chat.ID, imageUrl)
-					} else {
-						fmt.Println(response)
 					}
 					err = os.Remove(filePath)
 					if err != nil {
