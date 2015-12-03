@@ -19,37 +19,37 @@ func main() {
 			trimmedMessageText := ""
 			
 			recognizedQueryPrefix := "/get "
-			if strings.HasPrefix(update.Message.Text, recognizedQueryPrefix) {
-				trimmedMessageText = strings.TrimPrefix(update.Message.Text, recognizedQueryPrefix)
+			if strings.HasPrefix(strings.ToLower(update.Message.Text), recognizedQueryPrefix) {
+				trimmedMessageText = strings.TrimPrefix(strings.ToLower(update.Message.Text), recognizedQueryPrefix)
 				queryType = "Image"
 			}
 			
 			recognizedQueryPrefix = "/getgif "
-			if strings.HasPrefix(update.Message.Text, recognizedQueryPrefix) {
-				trimmedMessageText = strings.TrimPrefix(update.Message.Text, recognizedQueryPrefix)
+			if strings.HasPrefix(strings.ToLower(update.Message.Text), recognizedQueryPrefix) {
+				trimmedMessageText = strings.TrimPrefix(strings.ToLower(update.Message.Text), recognizedQueryPrefix)
 				queryType = "Gif"
 			}
 			
 			recognizedQueryPrefix = "/getmap "
-			if strings.HasPrefix(update.Message.Text, recognizedQueryPrefix) {
-				trimmedMessageText = strings.TrimPrefix(update.Message.Text, recognizedQueryPrefix)
+			if strings.HasPrefix(strings.ToLower(update.Message.Text), recognizedQueryPrefix) {
+				trimmedMessageText = strings.TrimPrefix(strings.ToLower(update.Message.Text), recognizedQueryPrefix)
 				queryType = "Map"
 			}
 			
 			recognizedQueryPrefix = "/getvid "
-			if strings.HasPrefix(update.Message.Text, recognizedQueryPrefix) {
-				trimmedMessageText = strings.TrimPrefix(update.Message.Text, recognizedQueryPrefix)
+			if strings.HasPrefix(strings.ToLower(update.Message.Text), recognizedQueryPrefix) {
+				trimmedMessageText = strings.TrimPrefix(strings.ToLower(update.Message.Text), recognizedQueryPrefix)
 				queryType = "Vid"
 			}
 			
 			recognizedQueryPrefix = "/gethuge "
-			if strings.HasPrefix(update.Message.Text, recognizedQueryPrefix) {
+			if strings.HasPrefix(strings.ToLower(update.Message.Text), recognizedQueryPrefix) {
 				trimmedMessageText = strings.TrimPrefix(update.Message.Text, recognizedQueryPrefix)
 				queryType = "HugeImage"
 			}
 			
 			recognizedQueryPrefix = "/gethugegif "
-			if strings.HasPrefix(update.Message.Text, recognizedQueryPrefix) {
+			if strings.HasPrefix(strings.ToLower(update.Message.Text), recognizedQueryPrefix) {
 				trimmedMessageText = strings.TrimPrefix(update.Message.Text, recognizedQueryPrefix)
 				queryType = "HugeGif"
 			}
@@ -94,8 +94,6 @@ func main() {
 					response := string(byteStream[:]);
 					if strings.Contains(response, "[Error]") || err != nil {
 						telegramapi.SendMessage(update.Message.Chat.ID, imageUrl)
-					} else {
-						fmt.Println(response)
 					}
 					err = os.Remove(filePath)
 					if err != nil {
