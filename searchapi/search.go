@@ -23,7 +23,7 @@ const BASE_URL = "https://www.googleapis.com/customsearch/v1?"
 const PUBLIC_IMAGE_SEARCH_URL = "https://www.googleapis.com/customsearch/v1?searchType=image&safe=off&num=1" + CSE_PARAM + GCSE_KEY_PARAM + "&q="
 const PUBLIC_MAPS_SEARCH_URL = "https://maps.googleapis.com/maps/api/place/textsearch/json?location=-30,30" + GCSE_KEY_PARAM + "&radius=50000&q="
 const PUBLIC_YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search?safeSearch=none" + GCSE_KEY_PARAM + "&part=snippet&q="
-const PUBLIC_BING_SEARCH_URL = "https://user:" + BING_SE_ID + "@api.datamarket.azure.com/Bing/Search/Image?$format=json&Query=%27"
+const PUBLIC_BING_SEARCH_URL = "https://user:" + BING_SE_ID + "@api.datamarket.azure.com/Bing/Search/Image?$format=json&Adult=%27Off%27&Query=%27"
 
 type SearchResult struct {
 	ResponseData RespData
@@ -38,18 +38,21 @@ type Result struct {
 }
 
 func SearchForImagesByKeyword(keyword string, getGif bool, getHuge bool) (string, string) {
+	randomizeResults := !getGif && !getHuge
 	keyword = url.QueryEscape(keyword)
 	realUrl := PUBLIC_IMAGE_SEARCH_URL + keyword
 
-	if getGif == true {
+	if getGif {
 		realUrl = realUrl + "&fileType=gif"
 	}
 
-	if getHuge == true {
+	if getHuge {
 		realUrl = realUrl + "&imgSize=huge"
 	}
 	
-	realUrl = realUrl + "&start=" + strconv.Itoa(rand.Intn(9)+1)
+	if randomizeResults {
+		realUrl = realUrl + "&start=" + strconv.Itoa(rand.Intn(9)+1)
+	}
 
 	response, err := http.Get(realUrl)
 	if err != nil {
@@ -90,7 +93,7 @@ func SearchForImagesByKeyword(keyword string, getGif bool, getHuge bool) (string
 		}
 		
 		filePath := ""
-		if (searchResults["mime"] != nil) {
+		if (searchResults["mime"] != nil) && !getHuge  {
 			filePath = DownloadIt(imageUrl, searchResults["mime"].(string))
 		}
 		return filePath, url.QueryEscape(imageUrl)
